@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="CANCHEROS — rock desde Buenos Aires. Sitio estilo web de los 2000."
+    />
+    <title>CANCHEROS</title>
+    <link rel="preconnect" href="https://fonts.cdnfonts.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://unpkg.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.cdnfonts.com/css/helvetica-neue-55"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="noise" aria-hidden="true"></div>
+    <div class="scanlines" aria-hidden="true"></div>
+
+    <a class="skip-link" href="#main">Saltar al contenido</a>
+
+    <main id="main" class="stage">
+      <div class="stage__spacer" aria-hidden="true"></div>
+    </main>
+
+    <aside class="badges" aria-label="Iconos de escritorio">
+      <button
+        type="button"
+        class="badge badge--gb"
+        id="guestbook-toggle"
+        data-icon-id="guestbook"
+      >
+        <span class="badge__inner">Libro de visitas</span>
+      </button>
+      <a
+        class="badge badge--bc"
+        data-icon-id="bandcamp"
+        href="https://elespantorekords.bandcamp.com/album/cancheros"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <span class="badge__inner">Bandcamp</span>
+      </a>
+      <button
+        type="button"
+        class="badge badge--letras"
+        id="letras-toggle"
+        data-icon-id="letras"
+      >
+        <span class="badge__inner">Letras</span>
+      </button>
+      <button
+        type="button"
+        class="badge badge--pelis"
+        id="pelis-toggle"
+        data-icon-id="pelis"
+      >
+        <span class="badge__inner">Pelis</span>
+      </button>
+      <button type="button" class="badge badge--bio" id="bio-toggle" data-icon-id="bio">
+        <span class="badge__inner">Bio</span>
+      </button>
+      <button
+        type="button"
+        class="badge badge--winamp"
+        id="winamp-toggle"
+        data-icon-id="winamp"
+      >
+        <span class="badge__inner">Winamp</span>
+      </button>
+      <button
+        type="button"
+        class="badge badge--jueguitos"
+        id="jueguitos-toggle"
+        data-icon-id="jueguitos"
+      >
+        <span class="badge__inner">Jueguitos</span>
+      </button>
+    </aside>
+
+    <div
+      class="widget-clock"
+      id="widget-clock"
+      role="timer"
+      aria-label="Hora en San Martín, Buenos Aires, Argentina"
+      title="Arrastrar"
+    >
+      <div class="widget-clock__handle">San Martín · BA</div>
+      <time class="widget-clock__time" id="widget-clock-time" aria-live="polite">--:--:--</time>
+      <div class="widget-clock__tz">Argentina (GMT-3)</div>
+    </div>
+
+    <div
+      class="widget-counter"
+      id="widget-counter"
+      role="region"
+      aria-label="Contador de visitas"
+      title="Arrastrar"
+    >
+      <div class="widget-counter__handle" aria-hidden="true"></div>
+      <div class="widget-counter__frame">
+        <img
+          src="https://counter1.optistats.ovh/private/freecounterstat.php?c=rwc97berrf7pm8fsnf1tm8zjak36ug9m"
+          loading="lazy"
+          decoding="async"
+          referrerpolicy="no-referrer-when-downgrade"
+          title="Contador de visitas"
+          alt="Contador de visitas"
+        />
+      </div>
+    </div>
+
+    <div
+      class="widget-tamagotchi"
+      id="widget-tamagotchi"
+      role="region"
+      aria-label="Gato Tamacanchero: maní, cerveza y rock o se pone triste"
+      title="Arrastrar"
+    >
+      <div class="widget-tamagotchi__stage">
+        <pre class="widget-tamagotchi__ascii" id="widget-tamagotchi-ascii"></pre>
+      </div>
+      <div class="widget-tamagotchi__bars" id="widget-tamagotchi-bars" aria-hidden="true"></div>
+      <div class="widget-tamagotchi__actions">
+        <button type="button" class="widget-tamagotchi__btn" id="widget-tamagotchi-mani">+ Maní</button>
+        <button type="button" class="widget-tamagotchi__btn" id="widget-tamagotchi-cerveza">
+          + Cerveza
+        </button>
+        <button type="button" class="widget-tamagotchi__btn" id="widget-tamagotchi-rock">+ Rock</button>
+      </div>
+    </div>
+
+    <section
+      class="guestbook-panel"
+      id="guestbook-panel"
+      hidden
+      aria-labelledby="guestbook-heading"
+    >
+      <div class="guestbook-panel__chrome">
+        <div class="guestbook-panel__titlebar">
+          <span id="guestbook-heading" class="guestbook-panel__title"
+            >Libro de visitas</span
+          >
+          <button
+            type="button"
+            class="guestbook-panel__close"
+            id="guestbook-close"
+            aria-label="Cerrar libro de visitas"
+          >
+            ×
+          </button>
+        </div>
+        
+        <iframe
+          id="guestbook-frame"
+          class="guestbook-panel__frame"
+          title="Guestbook Atabook"
+          loading="lazy"
+          data-guestbook-src="https://cancheros.atabook.org/"
+          src="about:blank"
+        ></iframe>
+      </div>
+    </section>
+
+    <section class="bio-panel" id="bio-panel" hidden aria-labelledby="bio-heading">
+      <div class="bio-panel__chrome">
+        <div class="bio-panel__titlebar">
+          <span id="bio-heading" class="bio-panel__title">BIO — Microsoft Word</span>
+          <button
+            type="button"
+            class="bio-panel__close"
+            id="bio-close"
+            aria-label="Cerrar Bio"
+          >
+            ×
+          </button>
+        </div>
+        <div class="bio-panel__menubar" aria-hidden="true">
+          <span>File</span><span>Edit</span><span>View</span><span>Insert</span><span>Help</span>
+        </div>
+        <div class="bio-panel__doc" role="document" aria-label="Documento de Bio">
+          <div class="bio-panel__page" contenteditable="true" spellcheck="false">
+            <p>
+              En el oeste, donde las calles huelen a humedad y cable quemado, dicen que CANCHEROS
+              ensaya de noche. No es rock: es algo más duro, más sucio. Las paredes transpiran cuando
+              tocan.
+            </p>
+            <p>
+              Los vecinos juran que las guitarras laten como corazones enfermos y que el bajo
+              arrastra algo desde abajo, desde donde no debería haber nada. Algunos aseguran haber
+              visto sombras entrar al galpón y no salir nunca.
+            </p>
+            <p>
+              Una vez entré. Salí distinto. Desde entonces, cada vez que suenan, alguien falta en el
+              barrio. Nadie pregunta. Nadie quiere saber.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section
+      class="lyrics-index-panel"
+      id="lyrics-index-panel"
+      hidden
+      aria-labelledby="lyrics-index-heading"
+    >
+      <div class="lyrics-index-panel__chrome">
+        <div class="lyrics-index-panel__titlebar">
+          <span id="lyrics-index-heading" class="lyrics-index-panel__title"
+            >Letras — CANCHEROS</span
+          >
+          <button
+            type="button"
+            class="lyrics-index-panel__close"
+            id="lyrics-index-close"
+            aria-label="Cerrar lista de letras"
+          >
+            ×
+          </button>
+        </div>
+        <div class="lyrics-index-panel__menubar" aria-hidden="true">
+          <span>File</span><span>Edit</span><span>View</span><span>Insert</span><span>Help</span>
+        </div>
+        <div class="lyrics-index-panel__body">
+          <ul class="lyrics-index-panel__list" id="lyrics-index-list" role="list"></ul>
+        </div>
+      </div>
+    </section>
+
+    <section
+      class="pelis-index-panel"
+      id="pelis-index-panel"
+      hidden
+      aria-labelledby="pelis-index-heading"
+    >
+      <div class="pelis-index-panel__chrome">
+        <div class="pelis-index-panel__titlebar">
+          <span id="pelis-index-heading" class="pelis-index-panel__title">Pelis — YouTube</span>
+          <button
+            type="button"
+            class="pelis-index-panel__close"
+            id="pelis-index-close"
+            aria-label="Cerrar lista de películas"
+          >
+            ×
+          </button>
+        </div>
+        <div class="pelis-index-panel__menubar" aria-hidden="true">
+          <span>File</span><span>Edit</span><span>View</span><span>Insert</span><span>Help</span>
+        </div>
+        <div class="pelis-index-panel__body">
+          <ul class="pelis-index-panel__list" id="pelis-index-list" role="list"></ul>
+        </div>
+      </div>
+    </section>
+
+    <section
+      class="jueguitos-index-panel"
+      id="jueguitos-index-panel"
+      hidden
+      aria-labelledby="jueguitos-index-heading"
+    >
+      <div class="jueguitos-index-panel__chrome">
+        <div class="jueguitos-index-panel__titlebar">
+          <span id="jueguitos-index-heading" class="jueguitos-index-panel__title">Jueguitos</span>
+          <button
+            type="button"
+            class="jueguitos-index-panel__close"
+            id="jueguitos-index-close"
+            aria-label="Cerrar Jueguitos"
+          >
+            ×
+          </button>
+        </div>
+        <div class="jueguitos-index-panel__menubar" aria-hidden="true">
+          <span>File</span><span>Edit</span><span>View</span><span>Insert</span><span>Help</span>
+        </div>
+        <div class="jueguitos-index-panel__body">
+          <ul class="jueguitos-index-panel__list" role="list">
+            <li class="jueguitos-index-panel__file-item" role="listitem">
+              <button
+                type="button"
+                id="doom-toggle"
+                class="jueguitos-index-panel__file jueguitos-index-panel__file--doom"
+                title="DOOM"
+              >
+                <span class="jueguitos-index-panel__file-label">DOOM</span>
+              </button>
+            </li>
+            <li class="jueguitos-index-panel__file-item" role="listitem">
+              <button
+                type="button"
+                id="snake-toggle"
+                class="jueguitos-index-panel__file jueguitos-index-panel__file--snake"
+                title="Snake"
+              >
+                <span class="jueguitos-index-panel__file-label">Snake</span>
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section
+      class="doom-panel"
+      id="doom-panel"
+      hidden
+      aria-labelledby="doom-heading"
+    >
+      <div class="doom-panel__chrome">
+        <div class="doom-panel__titlebar">
+          <span id="doom-heading" class="doom-panel__title">DOOM</span>
+          <button
+            type="button"
+            class="doom-panel__close"
+            id="doom-close"
+            aria-label="Cerrar DOOM"
+          >
+            ×
+          </button>
+        </div>
+        <iframe
+          class="doom-panel__frame"
+          title="DOOM (JS-DOS)"
+          referrerpolicy="no-referrer"
+          allow="fullscreen; autoplay; gamepad; clipboard-read; clipboard-write"
+          src="about:blank"
+          data-doom-src="https://thedoggybrad.github.io/doom_on_js-dos/"
+        ></iframe>
+      </div>
+    </section>
+
+    <section class="snake-panel" id="snake-panel" hidden aria-labelledby="snake-heading">
+      <div class="snake-panel__chrome">
+        <div class="snake-panel__titlebar">
+          <span id="snake-heading" class="snake-panel__title">Snake</span>
+          <button
+            type="button"
+            class="snake-panel__close"
+            id="snake-close"
+            aria-label="Cerrar Snake"
+          >
+            ×
+          </button>
+        </div>
+        <div class="snake-panel__body">
+          <p class="snake-panel__hint" id="snake-hint">
+            Puntos: <span id="snake-score">0</span> · Flechas o WASD · Espacio: nueva partida
+          </p>
+          <div class="snake-panel__stage">
+            <canvas
+              id="snake-canvas"
+              class="snake-panel__canvas"
+              width="400"
+              height="400"
+              tabindex="0"
+              aria-label="Tablero de Snake. Usá las flechas o WASD para moverte."
+            ></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="winamp-panel" id="winamp-panel" hidden aria-label="Winamp">
+      <div class="winamp-panel__chrome">
+        <div
+          id="webamp-anchor"
+          class="webamp-anchor"
+          role="region"
+          aria-label="Reproductor de música (Webamp)"
+        ></div>
+      </div>
+    </section>
+
+    <div class="bottom-marquee" aria-hidden="true">
+      <div class="bottom-marquee__inner">
+        <div class="bottom-marquee__content">
+          <span>CANCHEROS</span><span>CANCHEROS</span><span>CANCHEROS</span><span>CANCHEROS</span
+          ><span>CANCHEROS</span><span>CANCHEROS</span><span>CANCHEROS</span><span>CANCHEROS</span
+          ><span>CANCHEROS</span><span>CANCHEROS</span><span>CANCHEROS</span><span>CANCHEROS</span>
+        </div>
+        <div class="bottom-marquee__content" aria-hidden="true">
+          <span>CANCHEROS</span><span>CANCHEROS</span><span>CANCHEROS</span><span>CANCHEROS</span
+          ><span>CANCHEROS</span><span>CANCHEROS</span><span>CANCHEROS</span><span>CANCHEROS</span
+          ><span>CANCHEROS</span><span>CANCHEROS</span><span>CANCHEROS</span><span>CANCHEROS</span>
+        </div>
+      </div>
+    </div>
+
+    <script src="script.js" defer></script>
+    <!-- Winamp se carga on-demand desde script.js -->
+  </body>
+</html>
