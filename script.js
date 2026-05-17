@@ -28,9 +28,15 @@
     return { register: register, bringToFront: bringToFront };
   })();
 
+  function isMobileDesktopLayout() {
+    return !!(window.matchMedia && window.matchMedia("(max-width: 520px)").matches);
+  }
+
   function initDesktopIcons() {
     var icons = Array.prototype.slice.call(document.querySelectorAll(".badges .badge"));
     if (!icons.length) return;
+
+    var mobileGrid = isMobileDesktopLayout();
 
     var reduceMotion =
       window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -261,23 +267,26 @@
       var id = getId(el, i);
       el.__desktopId = id;
 
-      // Si no hay posición guardada, arrancan en random (en reduce-motion también)
-      if (positions[id]) applyPos(el, positions[id]);
-      else placeRandom(el, id);
+      if (mobileGrid) {
+        el.style.left = "";
+        el.style.top = "";
+        el.style.zIndex = "";
+      } else {
+        if (positions[id]) applyPos(el, positions[id]);
+        else placeRandom(el, id);
 
-      // Drag
-      el.addEventListener("mousedown", onMouseDown);
-      el.addEventListener("touchstart", onTouchStart, { passive: true });
-      el.addEventListener("click", onClickGuard, true);
+        el.addEventListener("mousedown", onMouseDown);
+        el.addEventListener("touchstart", onTouchStart, { passive: true });
+        el.addEventListener("click", onClickGuard, true);
+      }
 
-      // Win 3.1: doble click abre (solo para Bio y Guestbook)
-      // (dejamos el click normal en links)
       if (!reduceMotion) {
         // placeholder: no animamos nada acá, solo respetamos preferencia
       }
     }
 
     window.addEventListener("resize", function () {
+      if (isMobileDesktopLayout()) return;
       for (var j = 0; j < icons.length; j++) {
         var el2 = icons[j];
         var id2 = el2.__desktopId;
@@ -844,169 +853,73 @@
     WindowStack.register(panel);
   }
 
-  function initWinampWindow() {
-    var panel = document.getElementById("winamp-panel");
-    var toggle = document.getElementById("winamp-toggle");
-    var anchor = document.getElementById("webamp-anchor");
-    var chrome = panel ? panel.querySelector(".winamp-panel__chrome") : null;
-    if (!panel || !toggle || !anchor || !chrome) return;
+  /** @type {Promise<object> | null} */
+  var catalogPromise = null;
 
-    var winampPosKey = "cancheros.winamp.chrome.v1";
-    /** @type {{ left: number, top: number } | null} */
-    var savedPos = null;
+  function loadCatalog() {
+    if (!catalogPromise) {
+      catalogPromise = import("./audio/catalog.mjs");
+    }
+    return catalogPromise;
+  }
 
-    var loaded = false;
-    /** @type {Promise<void> | null} */
-    var loadPromise = null;
-    /** @type {{ reopen?: () => void; getPlayerMediaStatus?: () => string } | null} */
-    var webampInstance = null;
-    var webampSkinClosed = false;
-
-    function loadChromePos() {
-      try {
-        var raw = localStorage.getItem(winampPosKey);
-        if (!raw) return;
-        var p = JSON.parse(raw);
-        if (typeof p.left !== "number" || typeof p.top !== "number") return;
-        savedPos = { left: p.left, top: p.top };
-        applySavedPosition();
-      } catch (e) {
-        // ignore
+  function whenPlayerReady(cb) {
+    if (window.CancherosPlayer) {
+      cb();
+      return;
+    }
+    var attempts = 0;
+    var timer = window.setInterval(function () {
+      attempts += 1;
+      if (window.CancherosPlayer) {
+        window.clearInterval(timer);
+        cb();
+      } else if (attempts > 60) {
+        window.clearInterval(timer);
       }
-    }
+    }, 100);
+  }
 
-    function saveChromePos(left, top) {
-      try {
-        localStorage.setItem(winampPosKey, JSON.stringify({ left: left, top: top }));
-      } catch (e) {
-        // ignore
-      }
-    }
-
-    function applySavedPosition() {
-      if (savedPos) {
-        chrome.classList.add("winamp-panel__chrome--dragging");
-        chrome.style.left = savedPos.left + "px";
-        chrome.style.top = savedPos.top + "px";
-        chrome.style.right = "auto";
-        chrome.style.bottom = "auto";
-      } else {
-        chrome.classList.remove("winamp-panel__chrome--dragging");
-        chrome.style.left = "";
-        chrome.style.top = "";
-        chrome.style.right = "";
-        chrome.style.bottom = "";
-      }
-    }
-
-    function clampChrome(left, top) {
-      var rect = chrome.getBoundingClientRect();
-      var w = rect.width;
-      var h = rect.height;
-      var margin = 8;
-      var vw = window.innerWidth;
-      var vh = window.innerHeight;
-      var maxL = Math.max(margin, vw - w - margin);
-      var maxT = Math.max(margin, vh - h - margin);
-      return {
-        left: Math.min(Math.max(left, margin), maxL),
-        top: Math.min(Math.max(top, margin), maxT),
-      };
-    }
-
-    function syncWebampDomVisibility() {
-      var root = document.getElementById("webamp");
-      if (!root) return;
-      if (panel.hidden) {
-        root.classList.add("webamp--hidden-for-chrome");
-      } else {
-        root.classList.remove("webamp--hidden-for-chrome");
-      }
-    }
-
-    function closePanel() {
-      panel.hidden = true;
-      syncWebampDomVisibility();
-      if (toggle) toggle.focus();
-    }
-
-    async function ensureLoaded() {
-      if (loaded) return;
-      if (loadPromise) {
-        await loadPromise;
-        return;
-      }
-      loadPromise = (async function () {
-        try {
-          var mod = await import("./webamp-init.mjs");
-          if (mod && typeof mod.initWebamp === "function") {
-            webampInstance = await mod.initWebamp(anchor, {
-              onWebampClose: function () {
-                webampSkinClosed = true;
-                closePanel();
-              },
+  function playDiscoCancherosAlbum() {
+    whenPlayerReady(function () {
+      loadCatalog()
+        .then(function (mod) {
+          if (!mod || !mod.albumCancheros || !window.CancherosPlayer) return;
+          var album = mod.albumCancheros;
+          var art = mod.DISCO_ARTWORK || album.artwork || "img/disco-cancheros.jpg";
+          if (typeof window.CancherosPlayer.loadAlbum === "function") {
+            window.CancherosPlayer.loadAlbum({
+              title: album.title,
+              artwork: art,
+              tracks: album.tracks,
             });
+          } else {
+            window.CancherosPlayer.loadPlaylist({ tracks: album.tracks });
           }
-          loaded = true;
-        } catch (e) {
-          console.error(e);
-          anchor.classList.add("webamp-anchor--error");
-          anchor.textContent = "No se pudo cargar Winamp.";
-        } finally {
-          loadPromise = null;
-          syncWebampDomVisibility();
-        }
-      })();
-      await loadPromise;
-    }
-
-    async function openPanel() {
-      if (!panel.hidden) {
-        closePanel();
-        return;
-      }
-      panel.hidden = false;
-      WindowStack.bringToFront(panel);
-      void chrome.offsetWidth;
-      try {
-        await ensureLoaded();
-      } catch (e) {
-        console.error(e);
-      }
-      if (webampInstance && typeof webampInstance.reopen === "function") {
-        try {
-          var byStatus =
-            typeof webampInstance.getPlayerMediaStatus === "function" &&
-            webampInstance.getPlayerMediaStatus() === "CLOSED";
-          if (webampSkinClosed || byStatus) {
-            webampInstance.reopen();
-            webampSkinClosed = false;
-          }
-        } catch (re) {
-          console.error(re);
-        }
-      }
-      syncWebampDomVisibility();
-    }
-
-    toggle.addEventListener("click", openPanel);
-
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && !panel.hidden) closePanel();
+        })
+        .catch(function (e) {
+          console.error("Disco Cancheros:", e);
+        });
     });
+  }
 
-    window.addEventListener("resize", function () {
-      if (panel.hidden || !savedPos) return;
-      var c = clampChrome(savedPos.left, savedPos.top);
-      savedPos = c;
-      chrome.style.left = c.left + "px";
-      chrome.style.top = c.top + "px";
-      saveChromePos(c.left, c.top);
-    });
+  function initFooterPlayer() {
+    import("./footer-player.mjs")
+      .then(function (mod) {
+        if (mod && typeof mod.initFooterPlayerGlobal === "function") {
+          mod.initFooterPlayerGlobal();
+          playDiscoCancherosAlbum();
+        }
+      })
+      .catch(function (e) {
+        console.error("Footer player:", e);
+      });
+  }
 
-    loadChromePos();
-
-    WindowStack.register(panel);
+  function initDiscoCancherosIcon() {
+    var toggle = document.getElementById("disco-toggle");
+    if (!toggle) return;
+    toggle.addEventListener("click", playDiscoCancherosAlbum);
   }
 
   function initDoomWindow() {
@@ -1379,11 +1292,11 @@
         ctx.fillStyle = "rgba(0,0,0,0.55)";
         ctx.fillRect(0, 0, W, H);
         ctx.fillStyle = "#fff";
-        ctx.font = 'bold 22px Tahoma, "MS Sans Serif", sans-serif';
+        ctx.font = 'bold 22px Geist Mono, "MS Sans Serif", sans-serif';
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText("GAME OVER", W / 2, H / 2 - 14);
-        ctx.font = '14px Tahoma, "MS Sans Serif", sans-serif';
+        ctx.font = '14px Geist Mono, "MS Sans Serif", sans-serif';
         ctx.fillText("Espacio: otra partida", W / 2, H / 2 + 14);
       }
     }
@@ -1547,6 +1460,10 @@
       { title: "PIZZA BIRRA Y FASO", youtubeId: "eaUwe1sXz0E" },
       { title: "UN PESO UN DOLAR", youtubeId: "nSPoBG46eTU" },
       { title: "INDUSTRIA ARGENTINA", youtubeId: "EciYPQHzJwQ" },
+      {
+        title: "PERON SINFONIA DEL SENTIMIENTO CAP 1",
+        youtubeId: "uxRRUUUIQ7k",
+      },
     ];
 
     var panel = document.getElementById("pelis-index-panel");
@@ -2594,20 +2511,33 @@
 
   function initTamagotchiWidget() {
     var widget = document.getElementById("widget-tamagotchi");
-    var asciiEl = document.getElementById("widget-tamagotchi-ascii");
+    var imgEl = document.getElementById("widget-tamagotchi-img");
     var barsEl = document.getElementById("widget-tamagotchi-bars");
     var btnMani = document.getElementById("widget-tamagotchi-mani");
     var btnCerveza = document.getElementById("widget-tamagotchi-cerveza");
     var btnRock = document.getElementById("widget-tamagotchi-rock");
-    if (!widget || !asciiEl || !barsEl || !btnMani || !btnCerveza || !btnRock) return;
+    if (!widget || !imgEl || !barsEl || !btnMani || !btnCerveza || !btnRock) return;
 
     var STATE_KEY = "cancheros.widget.tamagotchi.v1";
-    var TICK_MS = 10000;
-    var OFFLINE_STEP_MS = 10000;
-    var DECAY_PER_STEP = 2;
+    var TICK_MS = 1000;
+    var OFFLINE_STEP_MS = 1000;
+    var DECAY_PER_STEP = 5;
     var FEED_AMOUNT = 22;
     var MAX_STAT = 100;
-    var MAX_OFFLINE_LOSS = 36;
+    var MAX_OFFLINE_LOSS = 100;
+    var TAMA_FALLBACK_KEY = "50-100-50";
+    var TAMA_IMAGE_KEYS = [
+      "0-0-0",
+      "0-0-100",
+      "0-50-0",
+      "0-50-100",
+      "0-100-0",
+      "0-100-100",
+      "50-50-50",
+      "50-100-50",
+      "100-100-0",
+      "100-100-100",
+    ];
 
     function clampStat(n) {
       return Math.max(0, Math.min(MAX_STAT, Math.round(n)));
@@ -2641,8 +2571,37 @@
     }
 
     var state = loadState();
-    var animFrame = 0;
-    var lastMood = "";
+
+    function parseTamaKey(key) {
+      var p = key.split("-");
+      return [Number(p[0]), Number(p[1]), Number(p[2])];
+    }
+
+    /** Elige la imagen existente más cercana en maní / cerveza / rock (usa las 10 JPG). */
+    function tamagotchiImageKey(mani, cerveza, rock) {
+      mani = clampStat(mani);
+      cerveza = clampStat(cerveza);
+      rock = clampStat(rock);
+      var bestKey = TAMA_FALLBACK_KEY;
+      var bestDist = Infinity;
+      for (var i = 0; i < TAMA_IMAGE_KEYS.length; i++) {
+        var key = TAMA_IMAGE_KEYS[i];
+        var t = parseTamaKey(key);
+        var d =
+          Math.abs(mani - t[0]) +
+          Math.abs(cerveza - t[1]) +
+          Math.abs(rock - t[2]);
+        if (d < bestDist) {
+          bestDist = d;
+          bestKey = key;
+        }
+      }
+      return bestKey;
+    }
+
+    function tamagotchiImageSrc(mani, cerveza, rock) {
+      return "tamagotchi/" + tamagotchiImageKey(mani, cerveza, rock) + ".jpg";
+    }
 
     function applyOfflineDecay() {
       var now = Date.now();
@@ -2659,264 +2618,40 @@
       saveState(state);
     }
 
-    function moodFromState() {
-      if (state.mani < 15 || state.cerveza < 15 || state.rock < 15) return "verySad";
-      if (state.mani < 35 || state.cerveza < 35 || state.rock < 35) return "sad";
-      if (state.mani > 65 && state.cerveza > 65 && state.rock > 65) return "happy";
-      return "ok";
-    }
-
-    function padAsciiLine(line, width) {
-      if (line.length > width) return line.slice(0, width);
-      while (line.length < width) line += " ";
-      return line;
-    }
-
-    function asciiFrame(lines, width) {
-      var out = [];
-      for (var i = 0; i < lines.length; i++) {
-        out.push(padAsciiLine(lines[i], width));
-      }
-      return out.join("\n");
-    }
-
-    /** Gato ASCII: 3 frames por humor (orejas, bigotes, cola). */
-    function animalFramesForMood(mood) {
-      var w = 26;
-      if (mood === "happy") {
-        return [
-          asciiFrame(
-            [
-              "      /\\_   _/\\       ",
-              "     /  o   o  \\      ",
-              "    |  ^ w w ^  |     ",
-              "  ==|_________|==    ",
-              "     \\  ..   /       ",
-              "     /|_____|\\      ",
-              "    / ' ~~~ ' \\     ",
-              "   '   /| |\\   '    ",
-              "       ~~~            ",
-            ],
-            w
-          ),
-          asciiFrame(
-            [
-              "      /\\_   _/\\       ",
-              "     /  @   @  \\      ",
-              "    |  ^ w w ^  |     ",
-              "  ==|_________|==    ",
-              "     \\  ..   /       ",
-              "     /|_____|\\      ",
-              "    / ' ~ ~ ' \\     ",
-              "   '   /| |\\   '    ",
-              "      ~~~~            ",
-            ],
-            w
-          ),
-          asciiFrame(
-            [
-              "     /\\_   _/\\        ",
-              "    /  o   o  \\       ",
-              "   |  ^ w w ^  |      ",
-              " ==|_________|==     ",
-              "    \\  ..   /        ",
-              "    /|_____|\\       ",
-              "   / ' ~~~ ' \\      ",
-              "  '   /| |\\   '     ",
-              "      ~~~             ",
-            ],
-            w
-          ),
-        ];
-      }
-      if (mood === "ok") {
-        return [
-          asciiFrame(
-            [
-              "      /\\_   _/\\       ",
-              "     /  -   -  \\      ",
-              "    |  . w w .  |     ",
-              "     \\________/      ",
-              "    ==/  ..  \\==     ",
-              "     /|______|\\      ",
-              "    / ' zzz ' \\     ",
-              "   '   /| |\\   '    ",
-              "       ~~~            ",
-            ],
-            w
-          ),
-          asciiFrame(
-            [
-              "      /\\_   _/\\       ",
-              "     /  ~   ~  \\      ",
-              "    |  . w w .  |     ",
-              "     \\________/      ",
-              "    ==/  ..  \\==     ",
-              "     /|______|\\      ",
-              "    / ' zzz ' \\     ",
-              "   '   /| |\\   '    ",
-              "      ~~~            ",
-            ],
-            w
-          ),
-          asciiFrame(
-            [
-              "      /\\_   _/\\       ",
-              "     /  -   -  \\      ",
-              "    |  . w w .  |     ",
-              "     \\________/      ",
-              "    ==/  ..  \\==     ",
-              "     /|______|\\      ",
-              "    / ' zzz ' \\     ",
-              "   '   /| |\\   '    ",
-              "       ~~~            ",
-            ],
-            w
-          ),
-        ];
-      }
-      if (mood === "sad") {
-        return [
-          asciiFrame(
-            [
-              "       >\\   /<        ",
-              "      /  T   T  \\     ",
-              "     |   .w.    |    ",
-              "      \\________/     ",
-              "     ==/ .. \\==      ",
-              "      /|_____|\\      ",
-              "     / ' ... ' \\     ",
-              "    '    ~~~    '    ",
-              "       /| |\\          ",
-            ],
-            w
-          ),
-          asciiFrame(
-            [
-              "       >\\   /<        ",
-              "      /  >   <  \\     ",
-              "     |   .w.    |    ",
-              "      \\________/     ",
-              "     ==/ .. \\==      ",
-              "      /|_____|\\      ",
-              "     / ' ... ' \\     ",
-              "    '    ~~~    '    ",
-              "       /| |\\          ",
-            ],
-            w
-          ),
-          asciiFrame(
-            [
-              "       >\\   /<        ",
-              "      /  T   T  \\     ",
-              "     |   .w.    |    ",
-              "      \\________/     ",
-              "     ==/ .. \\==      ",
-              "      /|_____|\\      ",
-              "     / ' ... ' \\     ",
-              "    '   ~~~~   '    ",
-              "       /| |\\          ",
-            ],
-            w
-          ),
-        ];
-      }
-      return [
-        asciiFrame(
-          [
-            "      >\\   /<         ",
-            "     /  T _ T  \\      ",
-            "    |   .w.    |     ",
-            "     \\________/      ",
-            "    ==/ .. \\==       ",
-            "     /|_____|\\       ",
-            "    / ' ; ; ' \\      ",
-            "   '  .\\___/.  '     ",
-            "      ''~~~''        ",
-          ],
-          w
-        ),
-        asciiFrame(
-          [
-            "      >\\   /<         ",
-            "     /  ;_;   \\      ",
-            "    |   .w.    |     ",
-            "     \\________/      ",
-            "    ==/ .. \\==       ",
-            "     /|_____|\\       ",
-            "    / ' T T ' \\      ",
-            "   '  .\\___/.  '     ",
-            "      ''~~~''        ",
-          ],
-          w
-        ),
-        asciiFrame(
-          [
-            "      >\\   /<         ",
-            "     /  T _ T  \\      ",
-            "    |   .w.    |     ",
-            "     \\________/      ",
-            "    ==/ .. \\==       ",
-            "     /|_____|\\       ",
-            "    / ' ; ; ' \\      ",
-            "   '  .\\___/.  '     ",
-            "      ''~~~''        ",
-          ],
-          w
-        ),
-      ];
-    }
-
-    function repeatCh(ch, n) {
-      var s = "";
-      for (var i = 0; i < n; i++) s += ch;
-      return s;
-    }
-
-    /** Etiqueta (≤7) + valor 0–100 alineado + barra ASCII */
-    function statNumPadded(n) {
-      n = clampStat(n);
-      var s = String(n);
-      if (s.length >= 3) return s;
-      if (s.length === 2) return " " + s;
-      return "  " + s;
-    }
-
-    function barLine(label, val) {
+    function renderBarRow(label, val) {
       val = clampStat(val);
-      var filled = Math.round((val / MAX_STAT) * 8);
-      if (filled < 0) filled = 0;
-      if (filled > 8) filled = 8;
-      var empty = 8 - filled;
-      return (
-        padAsciiLine(String(label), 7) +
-        " " +
-        statNumPadded(val) +
-        " [" +
-        repeatCh("#", filled) +
-        repeatCh("-", empty) +
-        "]"
-      );
-    }
+      var row = document.createElement("div");
+      row.className = "widget-tamagotchi__bar-row";
 
-    function renderAsciiOnly() {
-      var m = moodFromState();
-      if (m !== lastMood) {
-        lastMood = m;
-        animFrame = 0;
-      }
-      var frames = animalFramesForMood(m);
-      asciiEl.textContent = frames[animFrame % frames.length];
+      var labelEl = document.createElement("span");
+      labelEl.className = "widget-tamagotchi__bar-label";
+      labelEl.textContent = label;
+
+      var track = document.createElement("span");
+      track.className = "widget-tamagotchi__bar-track";
+      track.setAttribute("role", "progressbar");
+      track.setAttribute("aria-valuemin", "0");
+      track.setAttribute("aria-valuemax", String(MAX_STAT));
+      track.setAttribute("aria-valuenow", String(val));
+      track.setAttribute("aria-label", label + " " + val);
+
+      var fill = document.createElement("span");
+      fill.className = "widget-tamagotchi__bar-fill";
+      fill.style.width = val + "%";
+
+      track.appendChild(fill);
+      row.appendChild(labelEl);
+      row.appendChild(track);
+      return row;
     }
 
     function render() {
-      renderAsciiOnly();
-      barsEl.textContent =
-        barLine("maní", state.mani) +
-        "\n" +
-        barLine("cerveza", state.cerveza) +
-        "\n" +
-        barLine("rock", state.rock);
+      imgEl.src = tamagotchiImageSrc(state.mani, state.cerveza, state.rock);
+      barsEl.replaceChildren(
+        renderBarRow("maní", state.mani),
+        renderBarRow("cerveza", state.cerveza),
+        renderBarRow("rock", state.rock)
+      );
     }
 
     function tick() {
@@ -2958,20 +2693,18 @@
     );
 
     window.setInterval(tick, TICK_MS);
-
-    var reduceMotion =
-      window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (!reduceMotion) {
-      window.setInterval(function () {
-        animFrame += 1;
-        renderAsciiOnly();
-      }, 520);
-    }
   }
 
   function initCounterWidget() {
     var widget = document.getElementById("widget-counter");
     if (!widget) return;
+    if (isMobileDesktopLayout()) {
+      widget.style.left = "";
+      widget.style.top = "";
+      widget.style.right = "";
+      widget.style.bottom = "";
+      return;
+    }
     initDraggableWidget(widget, "cancheros.widget.counter.pos", null);
   }
 
@@ -3014,7 +2747,8 @@
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initDesktopIcons);
     document.addEventListener("DOMContentLoaded", initBioWindow);
-    document.addEventListener("DOMContentLoaded", initWinampWindow);
+    document.addEventListener("DOMContentLoaded", initFooterPlayer);
+    document.addEventListener("DOMContentLoaded", initDiscoCancherosIcon);
     document.addEventListener("DOMContentLoaded", initDoomWindow);
     document.addEventListener("DOMContentLoaded", initSnakeWindow);
     document.addEventListener("DOMContentLoaded", initCollageBounce);
@@ -3028,7 +2762,8 @@
   } else {
     initDesktopIcons();
     initBioWindow();
-    initWinampWindow();
+    initFooterPlayer();
+    initDiscoCancherosIcon();
     initDoomWindow();
     initSnakeWindow();
     initCollageBounce();

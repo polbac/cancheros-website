@@ -8,19 +8,12 @@
       content="CANCHEROS — rock desde Buenos Aires. Sitio estilo web de los 2000."
     />
     <title>CANCHEROS</title>
-    <link rel="preconnect" href="https://fonts.cdnfonts.com" crossorigin />
-    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preconnect" href="https://unpkg.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.cdnfonts.com/css/helvetica-neue-55"
-      crossorigin="anonymous"
-    />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
-    />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jacquard+12&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -72,11 +65,11 @@
       </button>
       <button
         type="button"
-        class="badge badge--winamp"
-        id="winamp-toggle"
-        data-icon-id="winamp"
+        class="badge badge--disco"
+        id="disco-toggle"
+        data-icon-id="disco-cancheros"
       >
-        <span class="badge__inner">Winamp</span>
+        <span class="badge__inner">Disco Cancheros</span>
       </button>
       <button
         type="button"
@@ -86,38 +79,37 @@
       >
         <span class="badge__inner">Jueguitos</span>
       </button>
+      <div
+        class="widget-counter"
+        id="widget-counter"
+        role="region"
+        aria-label="Contador de visitas"
+        title="Arrastrar"
+      >
+        <div class="widget-counter__handle" aria-hidden="true"></div>
+        <div class="widget-counter__frame">
+          <img
+            src="https://counter1.optistats.ovh/private/freecounterstat.php?c=rwc97berrf7pm8fsnf1tm8zjak36ug9m"
+            loading="lazy"
+            decoding="async"
+            referrerpolicy="no-referrer-when-downgrade"
+            title="Contador de visitas"
+            alt="Contador de visitas"
+          />
+        </div>
+      </div>
     </aside>
 
     <div
       class="widget-clock"
       id="widget-clock"
       role="timer"
-      aria-label="Hora en San Martín, Buenos Aires, Argentina"
+      aria-label="hora en san martín, buenos aires, argentina"
       title="Arrastrar"
     >
-      <div class="widget-clock__handle">San Martín · BA</div>
+      <div class="widget-clock__handle">san martín · ba</div>
       <time class="widget-clock__time" id="widget-clock-time" aria-live="polite">--:--:--</time>
-      <div class="widget-clock__tz">Argentina (GMT-3)</div>
-    </div>
-
-    <div
-      class="widget-counter"
-      id="widget-counter"
-      role="region"
-      aria-label="Contador de visitas"
-      title="Arrastrar"
-    >
-      <div class="widget-counter__handle" aria-hidden="true"></div>
-      <div class="widget-counter__frame">
-        <img
-          src="https://counter1.optistats.ovh/private/freecounterstat.php?c=rwc97berrf7pm8fsnf1tm8zjak36ug9m"
-          loading="lazy"
-          decoding="async"
-          referrerpolicy="no-referrer-when-downgrade"
-          title="Contador de visitas"
-          alt="Contador de visitas"
-        />
-      </div>
+      <div class="widget-clock__tz">argentina (gmt-3)</div>
     </div>
 
     <div
@@ -128,9 +120,21 @@
       title="Arrastrar"
     >
       <div class="widget-tamagotchi__stage">
-        <pre class="widget-tamagotchi__ascii" id="widget-tamagotchi-ascii"></pre>
+        <img
+          class="widget-tamagotchi__img"
+          id="widget-tamagotchi-img"
+          src="tamagotchi/50-100-50.jpg"
+          alt="Tamacanchero"
+          height="90"
+          decoding="async"
+        />
       </div>
-      <div class="widget-tamagotchi__bars" id="widget-tamagotchi-bars" aria-hidden="true"></div>
+      <div
+        class="widget-tamagotchi__bars"
+        id="widget-tamagotchi-bars"
+        role="group"
+        aria-label="Energía: maní, cerveza y rock"
+      ></div>
       <div class="widget-tamagotchi__actions">
         <button type="button" class="widget-tamagotchi__btn" id="widget-tamagotchi-mani">+ Maní</button>
         <button type="button" class="widget-tamagotchi__btn" id="widget-tamagotchi-cerveza">
@@ -373,33 +377,99 @@
       </div>
     </section>
 
-    <section class="winamp-panel" id="winamp-panel" hidden aria-label="Winamp">
-      <div class="winamp-panel__chrome">
-        <div
-          id="webamp-anchor"
-          class="webamp-anchor"
-          role="region"
-          aria-label="Reproductor de música (Webamp)"
-        ></div>
+    <footer class="footer-player" id="footer-player" role="region" aria-label="Reproductor">
+      <div class="footer-player__art-wrap">
+        <img
+          class="footer-player__art"
+          id="footer-player-art"
+          src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 56 56'%3E%3Crect fill='%23222' width='56' height='56'/%3E%3Ctext x='28' y='32' text-anchor='middle' fill='%23666' font-size='10' font-family='sans-serif'%3E♪%3C/text%3E%3C/svg%3E"
+          alt=""
+          width="56"
+          height="56"
+          decoding="async"
+        />
       </div>
-    </section>
-
-    <div class="bottom-marquee" aria-hidden="true">
-      <div class="bottom-marquee__inner">
-        <div class="bottom-marquee__content">
-          <span>CANCHEROS</span><span>CANCHEROS</span><span>CANCHEROS</span><span>CANCHEROS</span
-          ><span>CANCHEROS</span><span>CANCHEROS</span><span>CANCHEROS</span><span>CANCHEROS</span
-          ><span>CANCHEROS</span><span>CANCHEROS</span><span>CANCHEROS</span><span>CANCHEROS</span>
+      <div class="footer-player__main">
+        <div class="footer-player__content-grid">
+          <div class="footer-player__meta">
+            <p class="footer-player__title" id="footer-player-title">Sin reproducción</p>
+            <p class="footer-player__artist" id="footer-player-artist">CANCHEROS</p>
+          </div>
+          <div class="footer-player__progress-row">
+            <button
+              type="button"
+              class="footer-player__btn footer-player__btn--play"
+              id="footer-player-play"
+              aria-label="Reproducir"
+            >
+              ▶
+            </button>
+            <span class="footer-player__time" id="footer-player-current" aria-live="off">0:00</span>
+            <div class="footer-player__progress-wrap">
+              <input
+                type="range"
+                class="footer-player__progress"
+                id="footer-player-progress"
+                min="0"
+                max="1000"
+                value="0"
+                step="1"
+                aria-label="Posición en la pista"
+                aria-valuemin="0"
+                aria-valuemax="1000"
+                aria-valuenow="0"
+              />
+            </div>
+            <span class="footer-player__time" id="footer-player-duration" aria-live="polite">0:00</span>
+          </div>
         </div>
-        <div class="bottom-marquee__content" aria-hidden="true">
-          <span>CANCHEROS</span><span>CANCHEROS</span><span>CANCHEROS</span><span>CANCHEROS</span
-          ><span>CANCHEROS</span><span>CANCHEROS</span><span>CANCHEROS</span><span>CANCHEROS</span
-          ><span>CANCHEROS</span><span>CANCHEROS</span><span>CANCHEROS</span><span>CANCHEROS</span>
+        <p class="footer-player__error" id="footer-player-error" hidden></p>
+      </div>
+      <div class="footer-player__controls">
+        <div class="footer-player__transport footer-player__transport--hidden" id="footer-player-transport">
+          <button
+            type="button"
+            class="footer-player__btn footer-player__btn--prev"
+            id="footer-player-prev"
+            aria-label="Tema anterior"
+            disabled
+          >
+            ‹
+          </button>
+          <button
+            type="button"
+            class="footer-player__btn footer-player__btn--next"
+            id="footer-player-next"
+            aria-label="Tema siguiente"
+            disabled
+          >
+            ›
+          </button>
+        </div>
+        <div class="footer-player__volume-wrap">
+          <button
+            type="button"
+            class="footer-player__btn footer-player__btn--mute"
+            id="footer-player-mute"
+            aria-label="Silenciar"
+          >
+            ♪
+          </button>
+          <input
+            type="range"
+            class="footer-player__volume"
+            id="footer-player-volume"
+            min="0"
+            max="100"
+            value="80"
+            step="1"
+            aria-label="Volumen"
+          />
         </div>
       </div>
-    </div>
+      <audio id="footer-player-audio" preload="metadata"></audio>
+    </footer>
 
     <script src="script.js" defer></script>
-    <!-- Winamp se carga on-demand desde script.js -->
   </body>
 </html>

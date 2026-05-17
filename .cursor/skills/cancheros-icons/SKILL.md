@@ -126,11 +126,32 @@ python3 -c "import urllib.parse; print(urllib.parse.quote(open('icon.svg').read(
 | Modal / iframe / juego | `<button>` + panel + lazy iframe si pesado |
 | Carpeta con hijos | Icono escritorio → panel índice → sub-iconos |
 
+## Iconos que reproducen música
+
+No hay ventana Winamp. El audio va al **footer player** vía API global:
+
+```js
+window.CancherosPlayer.loadTrack({
+  url: "audio/archivo.mp3",
+  title: "TÍTULO",
+  artist: "CANCHEROS",
+  artwork: "img/banda.jpg",
+});
+
+// Álbum / lista
+import("./audio/catalog.mjs").then(function (m) {
+  window.CancherosPlayer.loadPlaylist({ tracks: m.albumCancheros.tracks, startIndex: 0 });
+});
+```
+
+Cablear en el `click` del badge o del sub-icono en `script.js`. Ver `footer-player.mjs` y `SITE.md`.
+
 ## Referencias en el repo
 
 - Escritorio: `styles.css` `.badge--gb` … `.badge--jueguitos`
 - Sub-iconos: `.lyrics-index-panel__file`, `.pelis-index-panel__file`, `.jueguitos-index-panel__file--doom`
 - Drag iconos: `initDesktopIcons()` en `script.js`
+- Audio: `footer-player.mjs`, `audio/catalog.mjs`
 - Mapa del sitio: `SITE.md` en la raíz
 
 ## Anti-patrones

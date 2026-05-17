@@ -1,0 +1,11 @@
+{
+  "name": "cancheros-website",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "tag-audio": "node scripts/tag-audio.mjs"
+  },
+  "devDependencies": {
+    "node-id3": "^0.2.9"
+  }
+}

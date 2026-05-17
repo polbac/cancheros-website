@@ -1,0 +1,29 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Entorno / secretos
+.env
+.env.*
+!.env.example
+
+# Dependencias (si agregás tooling)
+node_modules/
+
+# Audio del disco — local / deploy aparte; se versionan catalog.mjs y metadata.mjs
+audio/*.mp3
+audio/*.MP3
+audio/*.m4a
+audio/*.wav
+audio/*.flac
+audio/*.ogg
+
+# Editor (opcional)
+*.swp
+*~
