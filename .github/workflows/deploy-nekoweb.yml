@@ -87,14 +87,22 @@ jobs:
           echo "Archivos a desplegar: $(find ./build -type f | wc -l)"
           du -sh ./build
 
-      - name: Deploy to Nekoweb
-        uses: mp-pinheiro/nekoweb-deploy@0.2.8
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
         with:
-          API_KEY: ${{ secrets.NEKOWEB_API_KEY }}
-          BUILD_DIR: "${{ github.workspace }}/build"
-          DEPLOY_DIR: "/"
+          python-version: "3.11"
+
+      - name: Deploy to Nekoweb
+        env:
+          NEKOWEB_API_KEY: ${{ secrets.NEKOWEB_API_KEY }}
           NEKOWEB_PAGENAME: ${{ steps.nekoweb.outputs.pagename }}
-          CLEANUP: "False"
-          DELAY: "1"
-          RETRY_ATTEMPTS: "10"
-          RETRY_DELAY: "2"
+        run: |
+          git clone --depth 1 --branch 0.2.8 https://github.com/mp-pinheiro/nekoweb-deploy.git /tmp/nekoweb-deploy
+          pip install -r /tmp/nekoweb-deploy/requirements.txt
+          python /tmp/nekoweb-deploy/deploy.py \
+            "${NEKOWEB_API_KEY}" \
+            "${{ github.workspace }}/build" \
+            "/" \
+            "False" \
+            "${NEKOWEB_PAGENAME}" \
+            --delay 0.5
