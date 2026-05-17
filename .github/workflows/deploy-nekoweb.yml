@@ -98,5 +98,3 @@ jobs:
           DELAY: "1"
           RETRY_ATTEMPTS: "10"
           RETRY_DELAY: "2"
-          RETRY_EXP_BACKOFF: "true"
-          DEBUG: "true"
