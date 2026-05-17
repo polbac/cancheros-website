@@ -10,7 +10,7 @@
   --shadow: rgba(0, 0, 0, 0.35);
   --font-stack: "Jacquard 12";
   --ui-font: "Jacquard 12";
-  --explorer-font: Tahoma, "MS Sans Serif", Arial, sans-serif;
+  --explorer-font: "Jersey 10", monospace;
   /* Ventanas estilo Windows (barra superior, guestbook) */
   --window-bg: #0a0a0a;
   --window-fg: #f5f5f5;
