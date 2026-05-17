@@ -99,7 +99,9 @@ jobs:
         run: |
           git clone --depth 1 --branch 0.2.8 https://github.com/mp-pinheiro/nekoweb-deploy.git /tmp/nekoweb-deploy
           pip install -r /tmp/nekoweb-deploy/requirements.txt
-          python /tmp/nekoweb-deploy/deploy.py \
+          pip install "click>=7.1,<8.2"
+          cd /tmp/nekoweb-deploy
+          python deploy.py \
             "${NEKOWEB_API_KEY}" \
             "${{ github.workspace }}/build" \
             "/" \
