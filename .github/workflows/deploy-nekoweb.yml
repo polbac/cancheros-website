@@ -3,7 +3,7 @@
 #
 # Secrets (Settings → Secrets and variables → Actions):
 #   NEKOWEB_API_KEY   — API key de Nekoweb
-#   NEKOWEB_PAGENAME  — usuario exacto en nekoweb.org (ver https://nekoweb.org/api/site/info/TU_USUARIO)
+#   NEKOWEB_PAGENAME  — subdominio en nekoweb.org (ej. cancheros → cancheros.nekoweb.org)
 
 name: Deploy to Nekoweb
 
@@ -23,21 +23,26 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Verificar sitio Nekoweb
+        id: nekoweb
         env:
           NEKOWEB_PAGENAME: ${{ secrets.NEKOWEB_PAGENAME }}
         run: |
           if [ -z "$NEKOWEB_PAGENAME" ]; then
-            echo "::error::Falta el secret NEKOWEB_PAGENAME (tu usuario en nekoweb.org)."
+            echo "::error::Falta el secret NEKOWEB_PAGENAME (ej. cancheros para cancheros.nekoweb.org)."
             exit 1
           fi
-          HTTP=$(curl -sS -o /tmp/nekoweb-site.json -w "%{http_code}" \
-            "https://nekoweb.org/api/site/info/${NEKOWEB_PAGENAME}")
-          if [ "$HTTP" != "200" ]; then
-            echo "::error::No existe un sitio Nekoweb para el usuario «${NEKOWEB_PAGENAME}» (HTTP ${HTTP}). Revisá el secret NEKOWEB_PAGENAME."
-            cat /tmp/nekoweb-site.json || true
+          PAGE="${NEKOWEB_PAGENAME#https://}"
+          PAGE="${PAGE#http://}"
+          PAGE="${PAGE%.nekoweb.org}"
+          PAGE="${PAGE%%/*}"
+          PAGE="$(echo "$PAGE" | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')"
+          HTTP=$(curl -sS -o /dev/null -w "%{http_code}" -L "https://${PAGE}.nekoweb.org/")
+          if [ "$HTTP" != "200" ] && [ "$HTTP" != "301" ] && [ "$HTTP" != "302" ]; then
+            echo "::error::No responde https://${PAGE}.nekoweb.org/ (HTTP ${HTTP}). Revisá NEKOWEB_PAGENAME (solo el subdominio, ej. cancheros)."
             exit 1
           fi
-          echo "Sitio encontrado en nekoweb.org."
+          echo "Sitio OK: https://${PAGE}.nekoweb.org/"
+          echo "pagename=${PAGE}" >> "$GITHUB_OUTPUT"
 
       - name: Prepare build
         run: |
@@ -64,7 +69,7 @@ jobs:
           API_KEY: ${{ secrets.NEKOWEB_API_KEY }}
           BUILD_DIR: "./build"
           DEPLOY_DIR: "/"
-          NEKOWEB_PAGENAME: ${{ secrets.NEKOWEB_PAGENAME }}
+          NEKOWEB_PAGENAME: ${{ steps.nekoweb.outputs.pagename }}
           CLEANUP: "False"
           DELAY: "1"
           RETRY_ATTEMPTS: "10"
