@@ -41,7 +41,7 @@ jobs:
             ./ ./build/
 
       - name: Deploy to Nekoweb
-        uses: mp-pinheiro/nekoweb-deploy@v0.2.8
+        uses: mp-pinheiro/nekoweb-deploy@0.2.8
         with:
           API_KEY: ${{ secrets.NEKOWEB_API_KEY }}
           BUILD_DIR: "./build"
@@ -49,4 +49,3 @@ jobs:
           NEKOWEB_PAGENAME: ${{ secrets.NEKOWEB_PAGENAME }}
           CLEANUP: "False"
           DELAY: "0.5"
-          ENCRYPTION_KEY: ${{ secrets.NEKOWEB_ENCRYPTION_KEY }}
