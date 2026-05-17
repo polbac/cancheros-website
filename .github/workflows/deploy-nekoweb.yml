@@ -1,0 +1,52 @@
+# Deploy automático a Nekoweb en cada push a main.
+# https://github.com/marketplace/actions/deploy-to-nekoweb
+#
+# Secrets del repositorio (Settings → Secrets and variables → Actions):
+#   NEKOWEB_API_KEY     — API key de Nekoweb
+#   NEKOWEB_PAGENAME    — nombre de tu sitio (usuario en nekoweb, ej. polbac)
+#
+# Opcional:
+#   NEKOWEB_ENCRYPTION_KEY — cifra el archivo file_states en el servidor
+
+name: Deploy to Nekoweb
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare build
+        run: |
+          mkdir -p ./build
+          rsync -a \
+            --exclude '.git/' \
+            --exclude '.github/' \
+            --exclude 'node_modules/' \
+            --exclude '.cursor/' \
+            --exclude 'scripts/' \
+            --exclude 'package.json' \
+            --exclude 'package-lock.json' \
+            --exclude 'SITE.md' \
+            --exclude '.gitignore' \
+            --exclude '.DS_Store' \
+            ./ ./build/
+
+      - name: Deploy to Nekoweb
+        uses: mp-pinheiro/nekoweb-deploy@v0.2.8
+        with:
+          API_KEY: ${{ secrets.NEKOWEB_API_KEY }}
+          BUILD_DIR: "./build"
+          DEPLOY_DIR: "/"
+          NEKOWEB_PAGENAME: ${{ secrets.NEKOWEB_PAGENAME }}
+          CLEANUP: "False"
+          DELAY: "0.5"
+          ENCRYPTION_KEY: ${{ secrets.NEKOWEB_ENCRYPTION_KEY }}
