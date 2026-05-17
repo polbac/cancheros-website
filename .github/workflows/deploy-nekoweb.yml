@@ -44,6 +44,30 @@ jobs:
           echo "Sitio OK: https://${PAGE}.nekoweb.org/"
           echo "pagename=${PAGE}" >> "$GITHUB_OUTPUT"
 
+      - name: Probar API key
+        env:
+          NEKOWEB_API_KEY: ${{ secrets.NEKOWEB_API_KEY }}
+        run: |
+          CODE=$(curl -sS -o /tmp/nekoweb-api.txt -w "%{http_code}" \
+            -H "Authorization: ${NEKOWEB_API_KEY}" \
+            "https://nekoweb.org/api/files/readfolder?pathname=/")
+          if [ "$CODE" != "200" ]; then
+            echo "::error::NEKOWEB_API_KEY rechazada (HTTP ${CODE}). Generá una key nueva en Nekoweb → API."
+            cat /tmp/nekoweb-api.txt || true
+            exit 1
+          fi
+          echo "API key OK."
+
+      - name: Limpiar file_states remoto
+        env:
+          NEKOWEB_API_KEY: ${{ secrets.NEKOWEB_API_KEY }}
+        run: |
+          curl -sS -X POST "https://nekoweb.org/api/files/delete" \
+            -H "Authorization: ${NEKOWEB_API_KEY}" \
+            --data-urlencode "pathname=/_file_states" \
+            -o /tmp/delete-states.txt -w "HTTP %{http_code}\n" || true
+          cat /tmp/delete-states.txt || true
+
       - name: Prepare build
         run: |
           mkdir -p ./build
@@ -67,7 +91,7 @@ jobs:
         uses: mp-pinheiro/nekoweb-deploy@0.2.8
         with:
           API_KEY: ${{ secrets.NEKOWEB_API_KEY }}
-          BUILD_DIR: "./build"
+          BUILD_DIR: "${{ github.workspace }}/build"
           DEPLOY_DIR: "/"
           NEKOWEB_PAGENAME: ${{ steps.nekoweb.outputs.pagename }}
           CLEANUP: "False"
